@@ -17,7 +17,7 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 import "./App.css";
 
 const API_URL =
- `${ import.meta.env.VITE_API_URL}/api/v1`;
+ `${ import.meta.env.VITE_API_URL}`;
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -612,7 +612,7 @@ function App() {
                 <div className="social-links">
 
                   <a
-                    href="https://github.com/"
+                    href="https://github.com/Shantanu-thapa"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -621,7 +621,7 @@ function App() {
                   </a>
 
                   <a
-                    href="https://linkedin.com/"
+                    href = "https://www.linkedin.com/in/shantanu-thapa-443b70380/"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -630,7 +630,7 @@ function App() {
                   </a>
 
                   <a
-                    href="mailto:your-email@example.com"
+                    href="mailto:shantanuthapa021@gmail.com"
                   >
                     <Mail size={18} />
                     Email
