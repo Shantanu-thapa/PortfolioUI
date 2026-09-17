@@ -108,7 +108,7 @@ function App() {
 
     try {
       await axios.post(
-        `${API_URL}/auth/contact`,
+        `${API_URL}/visitors/contact`,
         contact
       );
 
