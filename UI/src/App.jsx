@@ -128,7 +128,7 @@ function App() {
       );
 
       setContactStatus(
-        "Something went wrong. Please try again."
+        "Something went wrong. Please try again after sometime." 
       );
     }
   };
