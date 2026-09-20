@@ -75,23 +75,48 @@ function App() {
     }
   }, []);
 
-  // Resume download
-  const handleResumeDownload = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/resume/download`
-      );
+ const handleResumeDownload = async () => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/resume/download`
+    );
 
-      const resumeURL = response.data.resumeURL;
+    const resumeURL = response.data.resumeURL;
+    const fileName =
+      response.data.fileName || "Shantanu_Thapa_Resume.pdf";
 
-      if (resumeURL) {
-        window.open(resumeURL, "_blank");
-      }
-    } catch (error) {
-      console.error("Resume download failed:", error);
+    if (!resumeURL) {
+      console.error("Resume URL not found");
+      return;
     }
-  };
 
+    // Download the PDF from Cloudinary
+    const pdfResponse = await axios.get(resumeURL, {
+      responseType: "blob",
+    });
+
+    const blob = new Blob([pdfResponse.data], {
+      type: "application/pdf",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName.endsWith(".pdf")
+      ? fileName
+      : `${fileName}.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error("Resume download failed:", error);
+  }
+};
   // Contact input handler
   const handleContactChange = (event) => {
     setContact({
