@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -16,8 +15,7 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 import "./App.css";
 
-const API_URL =
- `${ import.meta.env.VITE_API_URL}`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -31,93 +29,99 @@ function App() {
   });
 
   const [contactStatus, setContactStatus] = useState("");
-  const [loadingProjects, setLoadingProjects] = useState(true);
 
-  // Fetch projects and resume
+  // =========================
+  // GET PROJECTS
+  // =========================
   useEffect(() => {
-    const fetchPortfolioData = async () => {
-      try {
-        const [projectsResponse, resumeResponse] = await Promise.all([
-          axios.get(`${API_URL}/projects/myprojects`),
-          axios.get(`${API_URL}/resume`),
-        ]);
+    axios
+      .get(`${API_URL}/projects/myprojects`)
+      .then((response) => {
+        console.log("Projects API:", response.data);
 
-        setProjects(projectsResponse.data.projects || []);
-        setResume(resumeResponse.data.resume || null);
-      } catch (error) {
-        console.error("Failed to load portfolio data:", error);
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-
-    fetchPortfolioData();
+        setProjects(response.data.projects || []);
+      })
+      .catch((error) => {
+        console.error(
+          "Projects API error:",
+          error.response?.data || error.message
+        );
+      });
   }, []);
 
-  // Track unique portfolio visitor per browser session
+  // =========================
+  // GET RESUME
+  // =========================
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/resume`)
+      .then((response) => {
+        console.log("Resume API:", response.data);
+
+        setResume(response.data.resume || null);
+      })
+      .catch((error) => {
+        console.error(
+          "Resume API error:",
+          error.response?.data || error.message
+        );
+      });
+  }, []);
+
+  // =========================
+  // TRACK VISITOR
+  // =========================
   useEffect(() => {
     const alreadyTracked = sessionStorage.getItem(
       "portfolioVisitorTracked"
     );
 
-    if (!alreadyTracked) {
-      axios
-        .post(`${API_URL}/visitors`)
-        .then(() => {
-          sessionStorage.setItem(
-            "portfolioVisitorTracked",
-            "true"
-          );
-        })
-        .catch((error) => {
-          console.error("Visitor tracking failed:", error);
-        });
-    }
+    if (alreadyTracked) return;
+
+    axios
+      .post(`${API_URL}/visitor`)
+      .then(() => {
+        sessionStorage.setItem(
+          "portfolioVisitorTracked",
+          "true"
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "Visitor tracking error:",
+          error.response?.data || error.message
+        );
+      });
   }, []);
 
- const handleResumeDownload = async () => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/resume/download`
-    );
+  // =========================
+  // DOWNLOAD RESUME
+  // =========================
+  const handleResumeDownload = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/resume/download`
+      );
 
-    const resumeURL = response.data.resumeURL;
-    const fileName =
-      response.data.fileName || "Shantanu_Thapa_Resume.pdf";
+      const resumeURL = response.data.resumeURL;
 
-    if (!resumeURL) {
-      console.error("Resume URL not found");
-      return;
+      if (!resumeURL) {
+        console.error("Resume URL not found");
+        return;
+      }
+
+      window.open(resumeURL, "_blank");
+    } catch (error) {
+      console.error(
+        "Resume download error:",
+        error.response?.data || error.message
+      );
     }
+  };
 
-    // Download the PDF from Cloudinary
-    const pdfResponse = await axios.get(resumeURL, {
-      responseType: "blob",
-    });
-
-    const blob = new Blob([pdfResponse.data], {
-      type: "application/pdf",
-    });
-
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName.endsWith(".pdf")
-      ? fileName
-      : `${fileName}.pdf`;
-
-    document.body.appendChild(link);
-    link.click();
-
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-
-  } catch (error) {
-    console.error("Resume download failed:", error);
-  }
-};
-  // Contact input handler
+  // =========================
+  // CONTACT INPUT
+  // =========================
   const handleContactChange = (event) => {
     setContact({
       ...contact,
@@ -125,7 +129,9 @@ function App() {
     });
   };
 
-  // Contact form submission
+  // =========================
+  // CONTACT SUBMIT
+  // =========================
   const handleContactSubmit = async (event) => {
     event.preventDefault();
 
@@ -148,21 +154,25 @@ function App() {
       );
     } catch (error) {
       console.error(
-        "Contact submission failed:",
-        error
+        "Contact submission error:",
+        error.response?.data || error.message
       );
 
       setContactStatus(
-        "Something went wrong. Please try again after sometime." 
+        "Something went wrong. Please try again."
       );
     }
   };
 
-  // Smooth section navigation
+  // =========================
+  // NAVIGATION
+  // =========================
   const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({
-      behavior: "smooth",
-    });
+    document
+      .getElementById(id)
+      ?.scrollIntoView({
+        behavior: "smooth",
+      });
 
     setMenuOpen(false);
   };
@@ -171,6 +181,7 @@ function App() {
     <div className="portfolio">
 
       {/* ================= NAVBAR ================= */}
+
       <header className="navbar">
         <div className="container nav-inner">
 
@@ -186,33 +197,23 @@ function App() {
               menuOpen ? "nav-open" : ""
             }`}
           >
-            <button
-              onClick={() => scrollToSection("about")}
-            >
+            <button onClick={() => scrollToSection("about")}>
               About
             </button>
 
-            <button
-              onClick={() => scrollToSection("skills")}
-            >
+            <button onClick={() => scrollToSection("skills")}>
               Skills
             </button>
 
-            <button
-              onClick={() => scrollToSection("projects")}
-            >
+            <button onClick={() => scrollToSection("projects")}>
               Projects
             </button>
 
-            <button
-              onClick={() => scrollToSection("resume")}
-            >
+            <button onClick={() => scrollToSection("resume")}>
               Resume
             </button>
 
-            <button
-              onClick={() => scrollToSection("contact")}
-            >
+            <button onClick={() => scrollToSection("contact")}>
               Contact
             </button>
           </nav>
@@ -232,7 +233,9 @@ function App() {
         </div>
       </header>
 
+
       {/* ================= HERO ================= */}
+
       <main>
 
         <section
@@ -307,7 +310,9 @@ function App() {
           </div>
         </section>
 
+
         {/* ================= ABOUT ================= */}
+
         <section
           id="about"
           className="section about-section"
@@ -332,21 +337,25 @@ function App() {
               <div className="about-text">
 
                 <p>
-                  I enjoy understanding real-world requirements and translating them into
-                  simple, efficient software experiences.
-                </p>
-                
-
-                <p>
-                 My interests span frontend development, backend systems, database technologies, analytics, 
-                 and AI-powered applications, with a focus on building practical, scalable, and user-focused software solutions.
+                  I enjoy understanding real-world requirements
+                  and translating them into simple, efficient
+                  software experiences.
                 </p>
 
                 <p>
-                 I prioritize clean, maintainable, and scalable logics, while keeping usability, clarity, 
-                 and real-world user needs at the center of the development process.
+                  My interests span frontend development,
+                  backend systems, database technologies,
+                  analytics, and AI-powered applications,
+                  with a focus on building practical,
+                  scalable, and user-focused software solutions.
                 </p>
 
+                <p>
+                  I prioritize clean, maintainable, and scalable
+                  logics, while keeping usability, clarity,
+                  and real-world user needs at the center
+                  of the development process.
+                </p>
 
               </div>
 
@@ -355,7 +364,9 @@ function App() {
           </div>
         </section>
 
+
         {/* ================= SKILLS ================= */}
+
         <section
           id="skills"
           className="section skills-section"
@@ -391,8 +402,9 @@ function App() {
                 <h3>Frontend</h3>
 
                 <p>
-                  React.js, JavaScript, HTML5, CSS3, TailwindCSS,
-                  responsive interfaces and API integration.
+                  React.js, JavaScript, HTML5, CSS3,
+                  TailwindCSS, responsive interfaces and
+                  API integration.
                 </p>
               </div>
 
@@ -425,7 +437,7 @@ function App() {
                 <h3>Data & AI</h3>
 
                 <p>
-                  SQL, Tableau, Zoho CRM and Zoho Analytics
+                  SQL, Tableau, Zoho CRM and Zoho Analytics,
                   AI-powered application development.
                 </p>
               </div>
@@ -435,7 +447,9 @@ function App() {
           </div>
         </section>
 
+
         {/* ================= PROJECTS ================= */}
+
         <section
           id="projects"
           className="section projects-section"
@@ -463,13 +477,12 @@ function App() {
 
             </div>
 
-            {loadingProjects ? (
-              <div className="loading-state">
-                Loading projects...
-              </div>
-            ) : projects.length === 0 ? (
+
+            {/* PROJECTS */}
+
+            {projects.length === 0 ? (
               <div className="empty-state">
-                Projects will appear here soon.
+                No projects available.
               </div>
             ) : (
               <div className="projects-list">
@@ -511,9 +524,7 @@ function App() {
                             rel="noreferrer"
                           >
                             Live project
-                            <ArrowUpRight
-                              size={16}
-                            />
+                            <ArrowUpRight size={16} />
                           </a>
                         )}
 
@@ -531,7 +542,9 @@ function App() {
           </div>
         </section>
 
+
         {/* ================= STATEMENT ================= */}
+
         <section className="statement-section">
 
           <div className="container statement-content">
@@ -556,7 +569,9 @@ function App() {
 
         </section>
 
+
         {/* ================= RESUME ================= */}
+
         <section
           id="resume"
           className="section resume-section"
@@ -578,27 +593,28 @@ function App() {
 
             </div>
 
+
             <div className="resume-content">
 
-              {resume && (
+              {resume ? (
+                <>
+                  <p>
+                    My latest resume contains my education,
+                    technical skills, projects and experiences.
+                  </p>
+
+                  <button
+                    className="primary-button"
+                    onClick={handleResumeDownload}
+                  >
+                    <Download size={17} />
+                    Download resume
+                  </button>
+                </>
+              ) : (
                 <p>
-                  My latest resume contains my education,
-                  technical skills, projects and experiences.
-                </p>
-              )}
-
-              <button
-                className="primary-button"
-                onClick={handleResumeDownload}
-              >
-                <Download size={17} />
-                Download resume
-              </button>
-
-              {!resume && (
-                <small>
                   Resume currently unavailable.
-                </small>
+                </p>
               )}
 
             </div>
@@ -606,7 +622,9 @@ function App() {
           </div>
         </section>
 
+
         {/* ================= CONTACT ================= */}
+
         <section
           id="contact"
           className="section contact-section"
@@ -646,7 +664,7 @@ function App() {
                   </a>
 
                   <a
-                    href = "https://www.linkedin.com/in/shantanu-thapa-443b70380/"
+                    href="https://www.linkedin.com/in/shantanu-thapa-443b70380/"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -664,6 +682,7 @@ function App() {
                 </div>
 
               </div>
+
 
               <form
                 className="contact-form"
@@ -688,6 +707,7 @@ function App() {
 
                 </div>
 
+
                 <div className="form-group">
 
                   <label htmlFor="email">
@@ -706,9 +726,10 @@ function App() {
 
                 </div>
 
+
                 <div className="form-group">
 
-                  <label htmlFor="phone number">
+                  <label htmlFor="phone">
                     Phone
                   </label>
 
@@ -724,6 +745,7 @@ function App() {
 
                 </div>
 
+
                 <button
                   type="submit"
                   className="primary-button form-submit"
@@ -731,6 +753,7 @@ function App() {
                   Send message
                   <ArrowUpRight size={17} />
                 </button>
+
 
                 {contactStatus && (
                   <p className="contact-status">
@@ -747,7 +770,9 @@ function App() {
 
       </main>
 
+
       {/* ================= FOOTER ================= */}
+
       <footer className="footer">
 
         <div className="container footer-inner">
@@ -775,4 +800,3 @@ function App() {
 }
 
 export default App;
-
