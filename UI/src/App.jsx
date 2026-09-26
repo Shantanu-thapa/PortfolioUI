@@ -17,7 +17,7 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 import "./App.css";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+  import.meta.env.VITE_API_URL ;
 
 function App() {
   const [projects, setProjects] = useState([]);
