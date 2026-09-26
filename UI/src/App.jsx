@@ -195,10 +195,49 @@ function App() {
   // DOWNLOAD RESUME
 
   // =========================
+const handleResumeDownload = async () => {
 
-const handleResumeDownload = () => {
-  window.open(`${API_URL}/resume/download`, "_blank");
-};
+    try {
+
+      const response = await axios.get(
+
+        ${API_URL}/resume/download
+
+      );
+
+
+
+      const resumeURL = response.data.resumeURL;
+
+
+
+      if (!resumeURL) {
+
+        console.error("Resume URL not found");
+
+        return;
+
+      }
+
+
+
+      window.open(resumeURL, "_blank");
+
+    } catch (error) {
+
+      console.error(
+
+        "Resume download error:",
+
+        error.response?.data || error.message
+
+      );
+
+    }
+
+  };
+
+
 
 
   // =========================
