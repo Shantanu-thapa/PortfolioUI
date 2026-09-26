@@ -40,7 +40,7 @@ function App() {
     const fetchProjects = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/project/myprojects`
+          `${API_URL}/projects/myprojects`
         );
 
         console.log("Projects API:", response.data);
