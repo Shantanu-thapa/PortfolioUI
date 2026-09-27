@@ -115,39 +115,21 @@ function App() {
   // =====================================================
 
   const handleResumeDownload = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/resume/download`,
-        {
-          responseType: "blob",
-        }
-      );
+  try {
+    const response = await axios.get(
+      `${API_URL}/resume/download`
+    );
 
-      const blob = new Blob([response.data], {
-        type: "application/pdf",
-      });
-
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = resume?.fileName || "resume.pdf";
-
-      document.body.appendChild(link);
-      link.click();
-
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error(
-        "Resume download error:",
-        error.response?.data || error.message
-      );
+    if (response.data?.resumeURL) {
+      window.open(response.data.resumeURL, "_blank");
     }
-  };
-
+  } catch (error) {
+    console.error(
+      "Resume download error:",
+      error.response?.data || error.message
+    );
+  }
+};
   // =====================================================
   // CONTACT INPUT
   // =====================================================
