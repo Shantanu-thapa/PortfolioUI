@@ -114,21 +114,48 @@ function App() {
   // DOWNLOAD RESUME
   // =====================================================
 
-  const handleResumeDownload = async () => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/resume/download`
-    );
+ const downloadResume = async (req, res) => {
+    try {
+        const resume = await Resume.findOneAndUpdate(
+            { isActive: true },
+            { $inc: { downloadCount: 1 } },
+            {
+                returnDocument: "after"
+            }
+        );
 
-    if (response.data?.resumeURL) {
-      window.open(response.data.resumeURL, "_blank");
+        if (!resume) {
+            return res.status(404).json({
+                success: false,
+                message: "Resume not found"
+            });
+        }
+
+        const response = await fetch(resume.resumeURL);
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch resume from Cloudinary");
+        }
+
+        const pdfBuffer = Buffer.from(await response.arrayBuffer());
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${resume.fileName}"`
+        );
+        res.setHeader("Content-Length", pdfBuffer.length);
+
+        res.send(pdfBuffer);
+
+    } catch (error) {
+        console.error("Resume download error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to download resume"
+        });
     }
-  } catch (error) {
-    console.error(
-      "Resume download error:",
-      error.response?.data || error.message
-    );
-  }
 };
   // =====================================================
   // CONTACT INPUT
