@@ -114,47 +114,37 @@ function App() {
   // DOWNLOAD RESUME
   // =====================================================
 
- const downloadResume = async (req, res) => {
+ const handleResumeDownload = async () => {
     try {
-        const resume = await Resume.findOneAndUpdate(
-            { isActive: true },
-            { $inc: { downloadCount: 1 } },
+        const response = await axios.get(
+            `${API_URL}/resume/download`,
             {
-                returnDocument: "after"
+                responseType: "blob"
             }
         );
 
-        if (!resume) {
-            return res.status(404).json({
-                success: false,
-                message: "Resume not found"
-            });
-        }
-
-        const response = await fetch(resume.resumeURL);
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch resume from Cloudinary");
-        }
-
-        const pdfBuffer = Buffer.from(await response.arrayBuffer());
-
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${resume.fileName}"`
+        const blob = new Blob(
+            [response.data],
+            { type: "application/pdf" }
         );
-        res.setHeader("Content-Length", pdfBuffer.length);
 
-        res.send(pdfBuffer);
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = resume?.fileName || "resume.pdf";
+
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
 
     } catch (error) {
-        console.error("Resume download error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to download resume"
-        });
+        console.error(
+            "Resume download error:",
+            error.response?.data || error.message
+        );
     }
 };
   // =====================================================
